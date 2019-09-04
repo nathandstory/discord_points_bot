@@ -28,7 +28,7 @@ client.once('ready', () => {
   client.setScore = sql.prepare("INSERT OR REPLACE INTO scores (id, user, guild, points) VALUES (@id, @user, @guild, @points);");
 
   //Send a message to the general chat that the bot is online.
-  client.channels.get('<input channel id here').send('Bot Online!');
+  client.channels.get(config.channelToTalk).send('Bot Online!');
 });
 
 //When someone posts a message run this
@@ -61,7 +61,7 @@ if (message.author.bot || !message.guild) return;
   const command = args.shift().toLowerCase();
 
   if(command === "points") {
-    return message.reply(`You currently have ${score.stinkypoints} points.`);
+    return message.reply(`You currently have ${score.points} points.`);
   }
   
   if(command === "give") {
@@ -124,13 +124,13 @@ if (message.author.bot || !message.guild) return;
   
   if(command === "leaderboard") {
     // Grab the top 10
-    const top10 = sql.prepare("SELECT * FROM scores WHERE guild = ? ORDER BY stinkypoints DESC LIMIT 10;").all(message.guild.id);
+    const top10 = sql.prepare("SELECT * FROM scores WHERE guild = ? ORDER BY points DESC LIMIT 10;").all(message.guild.id);
 
     //Make it look good
     const embed = new Discord.RichEmbed()
       .setTitle("Leaderboard")
       .setAuthor(client.user.username, client.user.avatarURL)
-      .setDescription("The top stinkiest niggas:")
+      .setDescription("The top point holders:")
       .setColor(0x00AE86);
 
     for(const data of top10) {
