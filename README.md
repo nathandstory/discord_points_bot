@@ -11,3 +11,5 @@ Include a config.json with the contents:
 }
 ```
 The prefix character is what will determine if the discord bot detects a command or not. 
+
+To run on a local server, make sure you have python 2.7 and build-essentials.
