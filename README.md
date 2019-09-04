@@ -7,7 +7,8 @@ Include a config.json with the contents:
 ```
 {
   "token"  : "<Insert discord token here>",
-  "prefix" : "/"
+  "prefix" : "/",
+  "channelToTalk" : "<Insert channel Id for bot alerts>"
 }
 ```
 The prefix character is what will determine if the discord bot detects a command or not. 
