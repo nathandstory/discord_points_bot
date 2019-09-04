@@ -89,8 +89,10 @@ if (message.author.bot || !message.guild) return;
   
     // And we save it!
     client.setScore.run(userscore);
-  
-    return message.channel.send(`${user.tag} has received ${pointsToAdd} points.`);
+    
+    //Test for plural or singular points
+    if (pointsToAdd != 1)return message.channel.send(`${user.tag} has received ${pointsToAdd} points.`);
+    else return message.channel.send(`${user.tag} has received ${pointsToAdd} point.`);
   }
   
   if(command === "remove") {
@@ -119,7 +121,9 @@ if (message.author.bot || !message.guild) return;
     // And we save it!
     client.setScore.run(userscore);
 	
-    return message.channel.send(`${user.tag} has lost ${pointsToRemove} points`);
+    //Test for plural or singular points
+    if (pointsToRemove != 1)return message.channel.send(`${user.tag} has lost ${pointsToRemove} points.`);
+    else return message.channel.send(`${user.tag} has received ${pointsToRemove} point.`);
   }
   
   if(command === "leaderboard") {
