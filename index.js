@@ -7,7 +7,9 @@ const Discord = require('discord.js')
 const client = new Discord.Client()
 const SQLite = require("better-sqlite3");
 const sql = new SQLite('./scores.sqlite');
-const master = '<input master discord id here (optional)>';
+const master = config.masterID;
+const singPoint = config.pointName;
+const plurPoint = config.pointName + 's';
 
 //Called once the bot is online.
 client.once('ready', () => {
@@ -28,7 +30,7 @@ client.once('ready', () => {
   client.setScore = sql.prepare("INSERT OR REPLACE INTO scores (id, user, guild, points) VALUES (@id, @user, @guild, @points);");
 
   //Send a message to the general chat that the bot is online.
-  client.channels.get(config.channelToTalk).send('Bot Online!');
+  try{client.channels.get(config.channelToTalk).send('Bot Online!');}catch(err){console.log("No Channel Set")}
 });
 
 //When someone posts a message run this
@@ -59,11 +61,14 @@ if (message.author.bot || !message.guild) return;
 
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
-
-  if(command === "points") {
-    return message.reply(`You currently have ${score.points} points.`);
+  //Tell the user how many points they have (command is determined by adding s onto the point name in config)
+  if(command === "standing") {
+    if (score.points == 1) return message.reply(`You currently have ${score.points} ${singPoint}.`)
+    else return message.reply(`You currently have ${score.points} ${plurPoint}.`)
   }
-  
+  //WIP
+  if(command === "poll"){}
+  //Owner and Master Only - Give points
   if(command === "give") {
     // Limited to guild owner or master id
     if(!((message.author.id === message.guild.owner.id) || (message.author.id === master))) return message.reply("Sorry champ you can't do that!");
@@ -91,8 +96,8 @@ if (message.author.bot || !message.guild) return;
     client.setScore.run(userscore);
     
     //Test for plural or singular points
-    if (pointsToAdd != 1)return message.channel.send(`${user.tag} has received ${pointsToAdd} points.`);
-    else return message.channel.send(`${user.tag} has received ${pointsToAdd} point.`);
+    if (pointsToAdd != 1)return message.channel.send(`${user.tag} has received ${pointsToAdd} ${plurPoint}.`);
+    else return message.channel.send(`${user.tag} has received ${pointsToAdd} ${singPoint}.`);
   }
   
   if(command === "remove") {
@@ -122,8 +127,8 @@ if (message.author.bot || !message.guild) return;
     client.setScore.run(userscore);
 	
     //Test for plural or singular points
-    if (pointsToRemove != 1)return message.channel.send(`${user.tag} has lost ${pointsToRemove} points.`);
-    else return message.channel.send(`${user.tag} has received ${pointsToRemove} point.`);
+    if (pointsToRemove != 1)return message.channel.send(`${user.tag} has lost ${pointsToRemove} ${plurPoint}.`);
+    else return message.channel.send(`${user.tag} has received ${pointsToRemove} ${singPoint}.`);
   }
   
   if(command === "leaderboard") {
@@ -138,7 +143,7 @@ if (message.author.bot || !message.guild) return;
       .setColor(0x00AE86);
 
     for(const data of top10) {
-      embed.addField(client.users.get(data.user).tag, `${data.points} points`);
+      embed.addField(client.users.get(data.user).tag, `${data.points} ${(data.points === 1)?(singPoint):(plurPoint)}`);
     }
     return message.channel.send({embed});
   }
