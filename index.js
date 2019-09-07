@@ -61,13 +61,18 @@ if (message.author.bot || !message.guild) return;
   const updateScore = (message, user, value, set = false) => {
     //Get the current points from the user whos score we are trying to change
     let userscore = client.getScore.get(user.id, message.guild.id);
-    //Initiate defaults for users that may not be in the databse yet
+    //Initiate defaults for users that may not be in the database yet
     if (!userscore) userscore = { id: `${message.guild.id}-${user.id}`, user: user.id, guild: message.guild.id, points: 0 };
     //Adjust the score
     if(set) userscore.points = value;
     else userscore.points += value;
     //Set and Save the new score
     client.setScore.run(userscore);
+    //handle adding/removing role:
+    let member = message.guild.member(user);
+    let role = message.guild.roles.find(r => r.name === config.roleToUse);
+    if(userscore.points > 0) member.addRole(role).catch(console.error);
+    if(userscore.points == 0) member.removeRole(role).catch(console.error);
     return console.log("Scores have been updated.");
   }
 
@@ -75,8 +80,7 @@ if (message.author.bot || !message.guild) return;
   //Anyone can use this command - 
   //Tell the user how many points they have.
   if(command === "standing") {
-    if (score.points == 1) return message.reply(`you currently have ${score.points} ${singPoint}.`)
-    else return message.reply(`You currently have ${score.points} ${plurPoint}.`)
+    return message.reply(`you currently have ${score.points} ${(score.points === 1)?(singPoint):(plurPoint)}.`)
   }
 
   //--/VOTE----------------------------------------------------------------------------------------------------------------------------------------
@@ -90,7 +94,7 @@ if (message.author.bot || !message.guild) return;
     if(!user) return message.reply("you must mention someone or give their ID!");
     //get the amount of points to add or remove
     const pointValue = parseInt(args[2], 10);
-    if(!pointValue) return message.reply(`ylease specify an amount of ${plurPoint}.`);
+    if(!pointValue) return message.reply(`please specify an amount of ${plurPoint}.`);
     //--VOTE-EMBED-HANDLER-----------------------------------------------------------------------------
     Prompter.vote(message.channel, {
       question: `Should ${user} ${(subCommand === 'give')?('receive'):('lose')} ${pointValue} ${(pointValue === 1)?(singPoint):(plurPoint)}?`,
@@ -98,17 +102,17 @@ if (message.author.bot || !message.guild) return;
       timeout: 30000,
     }).then((response) => {
       const winner = response.emojis[0];
-      //if the vote passe
+      //if the vote passes
       if(winner.emoji === '✅') 
       {
-        message.channel.send(`The vote to ${(subCommand === 'give')?('give'):('take away')} ${pointValue} ${(pointValue === 1)?(singPoint):(plurPoint)} ${(subCommand === 'give')?('to'):('from')} ${user} has passed`);
+        message.channel.send(`The vote to ${(subCommand === 'give')?('give'):('take away')} ${pointValue} ${(pointValue === 1)?(singPoint):(plurPoint)} ${(subCommand === 'give')?('to'):('from')} ${user} has passed.`);
         if(subCommand === "give") return updateScore(message, user, pointValue);
         else if(subCommand === "remove") return updateScore(message, user, -pointValue);
-        else console.log("Vote changes failed to update");
+        else console.log("Vote changes failed to update for some reason.");
       }
       //if the vote fails
       if(winner.emoji === '❌') 
-        message.channel.send(`The vote to ${(subCommand === 'give')?('give'):('take away')} ${pointValue} ${(pointValue === 1)?(singPoint):(plurPoint)} ${(subCommand === 'give')?('to'):('from')} ${user} has failed`);
+        message.channel.send(`The vote to ${(subCommand === 'give')?('give'):('take away')} ${pointValue} ${(pointValue === 1)?(singPoint):(plurPoint)} ${(subCommand === 'give')?('to'):('from')} ${user} has not passed.`);
     });
   }
 
@@ -158,7 +162,7 @@ if (message.author.bot || !message.guild) return;
     if(!user) return message.reply("you must mention someone or give their ID!");
     // Read the amount of points to give to the user. 
     const pointsToSet = parseInt(args[1], 10);
-    if(!pointsToSet) return message.reply(`you didn't tell me what to set their ${plurPoint} to...`);
+    if(!pointsToSet && pointsToSet != 0) return message.reply(`you didn't tell me what to set their ${plurPoint} to...`);
     //update the score
     updateScore(message, user, pointsToSet, true);
     //Test for plural or singular points
@@ -191,7 +195,7 @@ if (message.author.bot || !message.guild) return;
    .setColor(0x00AE86);
 
    embed.addField("/standing", `Tells you how many ${plurPoint} you currently have.`);
-   embed.addField("/vote", `Allows you to make a vote to give or remove ${plurPoint} from an individual.`);
+   embed.addField("/vote", `Allows you to make a vote to give ${plurPoint} to or remove ${plurPoint} from an individual. Ex: /vote give @doopaderp 5`);
    embed.addField("/leaderboard", `Shows the top ${singPoint} holders.`);
    embed.addField("/give", `Gives an individual ${plurPoint}. Requires permissions.`);
    embed.addField("/remove", `Takes an individual's ${plurPoint}. Requires permissions.`);
