@@ -21,3 +21,19 @@ The name of the point system can be changed now. Simple include a singular versi
 RoleToUse applies a role to anyone with 1 or more points, and removes it if they go back to 0.
 
 To run on a local server, make sure you have python 2.7 and build-essentials.
+
+
+For Windows:
+```
+npm i --vs2015 -g windows-build-tools
+```
+
+For Linux:
+```
+sudo apt-get install build-essential
+```
+
+and then if node-gyp and better-sqlite3 arent installed yet use:
+```
+npm i node-gyp better-sqlite3
+```
